@@ -59,9 +59,9 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 - `~/.gitconfig` with `includeIf` blocks mapping each alias to a profile file:
   ```ini
   [includeIf "hasconfig:remote.*.url:git@gitcustom:*/**"]
-      path = ~/.gitconfig-pro
+      path = ~/.gitconfig-custom
   ```
-- Each profile file (e.g. `~/.gitconfig-pro`) containing:
+- Each profile file (e.g. `~/.gitconfig-custom`) containing:
   ```ini
   [user]
       name = YourName
