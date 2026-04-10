@@ -1,6 +1,6 @@
 # git-author-edits
 
-> ⚠️ **Warning:** Generated from a vibe-coding session. Use with caution — the scripts have not been fully reviewed. Use at your own risk.
+> ⚠️ **Warning:** Generated from a vibe-coding session. Use with caution — the scripts (and this doc) have not been fully reviewed. Use at your own risk.
 
 A toolkit for rewriting git commit author/committer identity across one or many repositories.
 
@@ -27,7 +27,7 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 | Force-push all + clean refs        | ❌                 | ✅ `push_all.sh`                  |
 | Author audit across repos          | ❌                 | ✅ `update_authors.sh`            |
 
-`git-reauthor` also relies on the deprecated `git-filter-branch`. This toolkit uses [`git-filter-repo`](https://github.com/newren/git-filter-repo), the current recommended approach.
+`git-reauthor` also relies on the deprecated `git-filter-branch`, which is known to be **orders of magnitude slower** than modern alternatives — on large repos it can take hours where [`git-filter-repo`](https://github.com/newren/git-filter-repo) takes seconds. This toolkit uses it as a **required dependency** and wraps it to handle profile resolution, selective rewriting, multi-repo batching, dry-run safety, and force-pushing automatically.
 
 ---
 
