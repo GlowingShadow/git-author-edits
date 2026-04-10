@@ -1,6 +1,6 @@
 # git-author-edits
 
-Result from a vibe-coding session.
+> ⚠️ **Warning:** Generated from a vibe-coding session. Use with caution — the scripts have not been fully reviewed. Use at your own risk.
 
 A toolkit for rewriting git commit author/committer identity across one or many repositories.
 
@@ -14,18 +14,18 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 
 [`git-reauthor`](https://github.com/tj/git-extras/blob/main/man/git-reauthor.md) (from `git-extras`) covers the single-repo case but stops there. This toolkit goes further:
 
-| Feature | `git-reauthor` | This toolkit |
-|---|---|---|
-| Single repo rewrite | ✅ | ✅ |
-| Multi-repo batch | ❌ | ✅ `rewrite_history_all.sh` |
-| Auto-profile from `~/.gitconfig` | ❌ (explicit args) | ✅ `lib_profiles.sh` |
-| Selective rewrite by regex pattern | ❌ | ✅ `--author PATTERN` |
-| Dry-run mode | ❌ | ✅ default on all scripts |
-| Backup + restore | ❌ | ✅ `refs/original/` + `--restore` |
-| Clone from URL list | ❌ | ✅ `clone_repos.sh` |
-| Switch HTTPS → SSH remotes | ❌ | ✅ `switch_remotes.sh` |
-| Force-push all + clean refs | ❌ | ✅ `push_all.sh` |
-| Author audit across repos | ❌ | ✅ `update_authors.sh` |
+| Feature                            | `git-reauthor`     | This toolkit                      |
+| ---------------------------------- | ------------------ | --------------------------------- |
+| Single repo rewrite                | ✅                 | ✅                                |
+| Multi-repo batch                   | ❌                 | ✅ `rewrite_history_all.sh`       |
+| Auto-profile from `~/.gitconfig`   | ❌ (explicit args) | ✅ `lib_profiles.sh`              |
+| Selective rewrite by regex pattern | ❌                 | ✅ `--author PATTERN`             |
+| Dry-run mode                       | ❌                 | ✅ default on all scripts         |
+| Backup + restore                   | ❌                 | ✅ `refs/original/` + `--restore` |
+| Clone from URL list                | ❌                 | ✅ `clone_repos.sh`               |
+| Switch HTTPS → SSH remotes         | ❌                 | ✅ `switch_remotes.sh`            |
+| Force-push all + clean refs        | ❌                 | ✅ `push_all.sh`                  |
+| Author audit across repos          | ❌                 | ✅ `update_authors.sh`            |
 
 `git-reauthor` also relies on the deprecated `git-filter-branch`. This toolkit uses [`git-filter-repo`](https://github.com/newren/git-filter-repo), the current recommended approach.
 
