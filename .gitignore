@@ -1,2 +1,7 @@
+*.txt
+
 list_authors.txt
 list_authors_unique.txt
+repos.txt
+
+user-scans/*

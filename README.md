@@ -36,6 +36,7 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 | Script                                              | Purpose                                            |
 | --------------------------------------------------- | -------------------------------------------------- |
 | [`clone_repos.sh`](#clone_reposssh)                 | Clone a list of repos from a file                  |
+| [`list_public_repos.sh`](#list_public_reposssh)     | List all public repos of a GitHub user             |
 | [`switch_remotes.sh`](#switch_remotessh)            | Convert HTTPS remotes to SSH, rename account       |
 | [`rewrite_history.sh`](#rewrite_historyssh)         | Rewrite author identity in a single repo           |
 | [`rewrite_history_all.sh`](#rewrite_history_allssh) | Rewrite author identity across all repos           |
@@ -115,6 +116,29 @@ https://github.com/ACCOUNT/REPO
 git@github.com:ACCOUNT/REPO.git
 # this line is ignored
 ```
+
+---
+
+### `list_public_repos.sh`
+
+List all public repositories of a GitHub user via the GitHub API. Output is one HTTPS URL per line, ready to use as a `repos.txt` file. Handles pagination automatically.
+
+```
+Usage: list_public_repos.sh --user USERNAME [--token TOKEN] [--out FILE]
+
+  --user USERNAME  GitHub username to query (required)
+  --token TOKEN    GitHub personal access token (optional)
+  --out FILE       Write output to FILE instead of stdout
+```
+
+Example — generate a `repos.txt` and clone all repos:
+
+```bash
+./list_public_repos.sh --user MyUsername --out repos.txt
+./clone_repos.sh --file repos.txt --dest ./workspace --yes
+```
+
+> **Note:** Unauthenticated requests are limited to 60/hour by the GitHub API. Pass `--token` with a [personal access token](https://github.com/settings/tokens) to raise it to 5000/hour.
 
 ---
 
