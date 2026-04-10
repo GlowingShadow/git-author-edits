@@ -26,6 +26,7 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 | Switch HTTPS → SSH remotes         | ❌                 | ✅ `switch_remotes.sh`            |
 | Force-push all + clean refs        | ❌                 | ✅ `push_all.sh`                  |
 | Author audit across repos          | ❌                 | ✅ `update_authors.sh`            |
+| Full pipeline per GitHub user      | ❌                 | ✅ `check_user.sh`                |
 
 `git-reauthor` also relies on the deprecated `git-filter-branch`, which is known to be **orders of magnitude slower** than modern alternatives — on large repos it can take hours where [`git-filter-repo`](https://github.com/newren/git-filter-repo) takes seconds. This toolkit uses it as a **required dependency** and wraps it to handle profile resolution, selective rewriting, multi-repo batching, dry-run safety, and force-pushing automatically.
 
@@ -33,17 +34,18 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 
 ## Scripts
 
-| Script                                              | Purpose                                            |
-| --------------------------------------------------- | -------------------------------------------------- |
-| [`clone_repos.sh`](#clone_reposssh)                 | Clone a list of repos from a file                  |
-| [`list_public_repos.sh`](#list_public_reposssh)     | List all public repos of a GitHub user             |
-| [`switch_remotes.sh`](#switch_remotessh)            | Convert HTTPS remotes to SSH, rename account       |
-| [`rewrite_history.sh`](#rewrite_historyssh)         | Rewrite author identity in a single repo           |
-| [`rewrite_history_all.sh`](#rewrite_history_allssh) | Rewrite author identity across all repos           |
-| [`push_all.sh`](#push_allssh)                       | Force-push all repos, optionally clean backup refs |
-| [`list_authors.sh`](#list_authorsssh)               | List unique author identities per repo             |
-| [`update_authors.sh`](#update_authorsssh)           | Regenerate author list files                       |
-| [`lib_profiles.sh`](#lib_profilesssh)               | Shared library — sourced by other scripts          |
+| Script                                              | Purpose                                               |
+| --------------------------------------------------- | ----------------------------------------------------- |
+| [`check_user.sh`](#check_usersh)                    | Full pipeline: list, clone, scan a GitHub user        |
+| [`clone_repos.sh`](#clone_reposssh)                 | Clone a list of repos from a file                     |
+| [`list_public_repos.sh`](#list_public_reposssh)     | List public owned (non-forked) repos of a GitHub user |
+| [`switch_remotes.sh`](#switch_remotessh)            | Convert HTTPS remotes to SSH, rename account          |
+| [`rewrite_history.sh`](#rewrite_historyssh)         | Rewrite author identity in a single repo              |
+| [`rewrite_history_all.sh`](#rewrite_history_allssh) | Rewrite author identity across all repos              |
+| [`push_all.sh`](#push_allssh)                       | Force-push all repos, optionally clean backup refs    |
+| [`list_authors.sh`](#list_authorsssh)               | List unique author identities per repo                |
+| [`update_authors.sh`](#update_authorsssh)           | Regenerate author list files                          |
+| [`lib_profiles.sh`](#lib_profilesssh)               | Shared library — sourced by other scripts             |
 
 ---
 
@@ -97,6 +99,29 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 
 ## Script reference
 
+### `check_user.sh`
+
+Full pipeline: lists all public owned (non-forked) repos for a GitHub user, clones them, scans all git identities, and prints the unique authors. Results are saved as `authors.txt` (per-repo) and `authors_unique.txt` (globally unique) inside the destination folder.
+
+```
+Usage: check_user.sh --user USERNAME [--token TOKEN] [--dest DIR] [--keep]
+
+  --user USERNAME  GitHub username to check (required)
+  --token TOKEN    GitHub personal access token (optional, raises rate limit)
+  --dest DIR       Directory to clone into (default: /tmp/check_user_USERNAME)
+  --keep           Keep cloned repos after the scan (default: delete them)
+```
+
+Example:
+
+```bash
+./check_user.sh --user someuser --dest ./user-scans/someuser --keep
+```
+
+> Forked repos are automatically excluded — only repos owned by the user are scanned.
+
+---
+
 ### `clone_repos.sh`
 
 Clone repositories listed one URL per line in a file. Already-cloned repos are skipped.
@@ -121,7 +146,7 @@ git@github.com:ACCOUNT/REPO.git
 
 ### `list_public_repos.sh`
 
-List all public repositories of a GitHub user via the GitHub API. Output is one HTTPS URL per line, ready to use as a `repos.txt` file. Handles pagination automatically.
+List all public, non-forked repositories owned by a GitHub user via the GitHub API. Output is one HTTPS URL per line, ready to use as a `repos.txt` file. Handles pagination automatically.
 
 ```
 Usage: list_public_repos.sh --user USERNAME [--token TOKEN] [--out FILE]
