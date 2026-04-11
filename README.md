@@ -34,18 +34,21 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 
 ## Scripts
 
-| Script                                              | Purpose                                               |
-| --------------------------------------------------- | ----------------------------------------------------- |
-| [`check_user.sh`](#check_usersh)                    | Full pipeline: list, clone, scan a GitHub user        |
-| [`clone_repos.sh`](#clone_reposssh)                 | Clone a list of repos from a file                     |
-| [`list_public_repos.sh`](#list_public_reposssh)     | List public owned (non-forked) repos of a GitHub user |
-| [`switch_remotes.sh`](#switch_remotessh)            | Convert HTTPS remotes to SSH, rename account          |
-| [`rewrite_history.sh`](#rewrite_historyssh)         | Rewrite author identity in a single repo              |
-| [`rewrite_history_all.sh`](#rewrite_history_allssh) | Rewrite author identity across all repos              |
-| [`push_all.sh`](#push_allssh)                       | Force-push all repos, optionally clean backup refs    |
-| [`list_authors.sh`](#list_authorsssh)               | List unique author identities per repo                |
-| [`update_authors.sh`](#update_authorsssh)           | Regenerate author list files                          |
-| [`lib_profiles.sh`](#lib_profilesssh)               | Shared library — sourced by other scripts             |
+| Script                                              | Purpose                                                 |
+| --------------------------------------------------- | ------------------------------------------------------- |
+| [`check_user.sh`](#check_usersh)                    | Full pipeline: list, clone, scan a GitHub user          |
+| [`clone_repos.sh`](#clone_reposssh)                 | Clone a list of repos from a file                       |
+| [`list_public_repos.sh`](#list_public_reposssh)     | List public owned (non-forked) repos of a GitHub user   |
+| [`switch_remotes.sh`](#switch_remotessh)            | Convert HTTPS remotes to SSH, rename account            |
+| [`rewrite_history.sh`](#rewrite_historyssh)         | Rewrite author identity in a single repo                |
+| [`rewrite_history_all.sh`](#rewrite_history_allssh) | Rewrite author identity across all repos                |
+| [`push_all.sh`](#push_allssh)                       | Force-push all repos, optionally clean backup refs      |
+| [`list_authors.sh`](#list_authorsssh)               | List unique author identities per repo                  |
+| [`update_authors.sh`](#update_authorsssh)           | Regenerate author list files                            |
+| [`search_content.sh`](#search_contentsh)            | Search file contents across all commits for a pattern   |
+| [`replace_content.sh`](#replace_contentsh)          | Replace text in file contents across entire history     |
+| [`purge_files.sh`](#purge_filessh)                  | Remove files matching glob patterns from entire history |
+| [`lib_profiles.sh`](#lib_profilesssh)               | Shared library — sourced by other scripts               |
 
 ---
 
@@ -271,6 +274,78 @@ Usage: update_authors.sh [--root DIR] [--out FILE] [--out-unique FILE]
 ```
 
 > Both output files are listed in `.gitignore` as they may contain sensitive identity information.
+
+---
+
+### `search_content.sh`
+
+Search file contents across all commits in a repo for a regex pattern. Uses `git grep` internally — significantly faster than blob-walking approaches on large repos.
+
+```
+Usage: search_content.sh [--repo DIR] --pattern REGEX [--pattern REGEX]... [--out-files FILE] [--case-sensitive]
+
+  --repo DIR          Target repository (default: .)
+  --pattern REGEX     Regex to search for. Repeatable — multiple patterns are joined with |
+  --out-files FILE    Write list of matching file paths to FILE
+  --case-sensitive    Disable case-insensitive matching (default: case-insensitive)
+```
+
+Example:
+
+```bash
+./search_content.sh --repo /path/to/repo --pattern "myname|myemail@example.com"
+```
+
+Output is printed per-file with matching lines. Exits with code 0 if no matches, 1 if matches found.
+
+> Output files are listed in `.gitignore` — use `--out-files report.txt` to save results without committing them.
+
+---
+
+### `replace_content.sh`
+
+Replace text in file contents across the entire git history of a repo using `git filter-repo --replace-text`. All branches and tags are rewritten and force-pushed.
+
+```
+Usage: replace_content.sh [--repo DIR] --replace OLD==>NEW [--replace OLD==>NEW]... [--file FILE] [--yes]
+
+  --repo DIR          Target repository (default: .)
+  --replace OLD==>NEW Replacement rule in filter-repo format. Repeatable.
+  --file FILE         File containing replacement rules (one OLD==>NEW per line)
+  --yes               Apply (default: dry-run)
+```
+
+Example:
+
+```bash
+./replace_content.sh --repo /path/to/repo --replace "oldusername==>REDACTED" --yes
+```
+
+> The SSH remote is automatically saved before and restored after the rewrite (git-filter-repo removes it).
+
+---
+
+### `purge_files.sh`
+
+Remove files matching glob patterns from the entire git history of a repo using `git filter-repo --invert-paths`. All branches and tags are rewritten and force-pushed.
+
+```
+Usage: purge_files.sh [--repo DIR] --pattern GLOB [--pattern GLOB]... [--file FILE] [--yes]
+
+  --repo DIR       Target repository (default: .)
+  --pattern GLOB   Glob pattern of files to remove. Repeatable.
+  --file FILE      File containing glob patterns (one per line)
+  --yes            Apply (default: dry-run)
+```
+
+Example:
+
+```bash
+# Remove compiled objects and a specific build directory
+./purge_files.sh --repo /path/to/repo --pattern "obj/**" --pattern "build-release/**" --yes
+```
+
+> A dry-run preview lists matching files via `git ls-files` before any rewrite.
 
 ---
 
