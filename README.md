@@ -10,9 +10,9 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 
 ---
 
-## Why not `git-reauthor`?
+## Comparison with `git-reauthor`
 
-[`git-reauthor`](https://github.com/tj/git-extras/blob/main/man/git-reauthor.md) (from `git-extras`) only rewrites commit _metadata_ (author/committer name and email) — it has no awareness of file contents whatsoever. This toolkit covers that and much more:
+[`git-reauthor`](https://github.com/tj/git-extras/blob/main/man/git-reauthor.md) (from `git-extras`) rewrites commit _metadata_ (author/committer name and email) in a single repo. This toolkit covers that and much more:
 
 | Feature                            | `git-reauthor`     | This toolkit                      |
 | ---------------------------------- | ------------------ | --------------------------------- |
