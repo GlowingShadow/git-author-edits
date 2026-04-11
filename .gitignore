@@ -3,5 +3,6 @@
 list_authors.txt
 list_authors_unique.txt
 repos.txt
+report.txt
 
-user-scans/*report.txt
+user-scans/*
