@@ -55,7 +55,8 @@ while IFS= read -r repo; do
     # 1. https -> SSH  (git@HOST:OWNER/REPO.git)
     new=$(printf '%s' "$old" \
       | sed -E "s#^https?://([^@/]+@)?github[.]com/([^/]+/[^/]+?)(\.git)?\$#git@${HOST}:\2.git#" \
-      | sed -E "s#^git@github[.]com:([^/]+/[^/]+?)(\.git)?\$#git@${HOST}:\1.git#")
+      | sed -E "s#^git@github[.]com:([^/]+/[^/]+?)(\.git)?\$#git@${HOST}:\1.git#" \
+      | sed -E "s#(\.git)\.git\$#\1#")
 
     # 2. Account rename: git@HOST:OLD/REPO.git -> git@HOST:NEW/REPO.git
     if [[ -n "$ACCOUNT_OLD" ]]; then
