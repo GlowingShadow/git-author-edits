@@ -2,9 +2,9 @@
 
 > ⚠️ **Warning:** Generated from a vibe-coding session. Use with caution — the scripts (and this doc) have not been fully reviewed. Use at your own risk.
 
-A toolkit for rewriting git commit author/committer identity across one or many repositories.
+A toolkit for cleaning up git history across one or many repositories: rewriting commit author/committer identity, searching and replacing sensitive content in file history, and purging unwanted files from the past.
 
-Designed for migrating from old personal identities to new ones (e.g. after renaming a GitHub account), while leaving third-party co-author commits untouched.
+Designed for migrating from old personal identities to new ones (e.g. after renaming a GitHub account), scrubbing sensitive data from committed files, and removing build artifacts — while leaving third-party co-author commits untouched.
 
 Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded values in any script.
 
@@ -27,6 +27,9 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 | Force-push all + clean refs        | ❌                 | ✅ `push_all.sh`                  |
 | Author audit across repos          | ❌                 | ✅ `update_authors.sh`            |
 | Full pipeline per GitHub user      | ❌                 | ✅ `check_user.sh`                |
+| Search file contents in history    | ❌                 | ✅ `search_content.sh`            |
+| Replace text in file history       | ❌                 | ✅ `replace_content.sh`           |
+| Purge files from history           | ❌                 | ✅ `purge_files.sh`               |
 
 `git-reauthor` also relies on the deprecated `git-filter-branch`, which is known to be **orders of magnitude slower** than modern alternatives — on large repos it can take hours where [`git-filter-repo`](https://github.com/newren/git-filter-repo) takes seconds. This toolkit uses it as a **required dependency** and wraps it to handle profile resolution, selective rewriting, multi-repo batching, dry-run safety, and force-pushing automatically.
 
