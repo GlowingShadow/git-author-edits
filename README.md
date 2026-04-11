@@ -12,7 +12,7 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 
 ## Why not `git-reauthor`?
 
-[`git-reauthor`](https://github.com/tj/git-extras/blob/main/man/git-reauthor.md) (from `git-extras`) covers the single-repo case but stops there. This toolkit goes further:
+[`git-reauthor`](https://github.com/tj/git-extras/blob/main/man/git-reauthor.md) (from `git-extras`) only rewrites commit _metadata_ (author/committer name and email) — it has no awareness of file contents whatsoever. This toolkit covers that and much more:
 
 | Feature                            | `git-reauthor`     | This toolkit                      |
 | ---------------------------------- | ------------------ | --------------------------------- |
@@ -31,7 +31,7 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 | Replace text in file history       | ❌                 | ✅ `replace_content.sh`           |
 | Purge files from history           | ❌                 | ✅ `purge_files.sh`               |
 
-`git-reauthor` also relies on the deprecated `git-filter-branch`, which is known to be **orders of magnitude slower** than modern alternatives — on large repos it can take hours where [`git-filter-repo`](https://github.com/newren/git-filter-repo) takes seconds. This toolkit uses it as a **required dependency** and wraps it to handle profile resolution, selective rewriting, multi-repo batching, dry-run safety, and force-pushing automatically.
+`git-reauthor` also relies on the deprecated `git-filter-branch`, which is known to be **orders of magnitude slower** than modern alternatives — on large repos it can take hours where [`git-filter-repo`](https://github.com/newren/git-filter-repo) takes seconds. This toolkit uses `git-filter-repo` as a **required dependency** and wraps it to handle profile resolution, selective rewriting, file content scrubbing, multi-repo batching, dry-run safety, and force-pushing automatically.
 
 ---
 
