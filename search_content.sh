@@ -14,8 +14,8 @@
 #   -h, --help         Show this help
 #
 # Examples:
-#   search_content.sh --repo ./npuzzle --pattern "REDACTED"
-#   search_content.sh --repo ./myrepo --pattern "REDACTED|REDACTED|REDACTED" --out-files matched.txt
+#   search_content.sh --repo ./npuzzle --pattern "content"
+#   search_content.sh --repo ./myrepo --pattern "content|secret|confidential" --out-files matched.txt
 #   search_content.sh --repo ./myrepo --pattern "password" --pattern "secret" --out-files matched.txt
 
 set -euo pipefail
