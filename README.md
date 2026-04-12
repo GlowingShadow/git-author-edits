@@ -1,6 +1,7 @@
 # git-author-edits
 
-> ⚠️ **Warning:** Generated from a vibe-coding session. Use with caution — the scripts (and this doc) have not been fully reviewed. Use at your own risk.
+> ⚠️ **Warning:** Generated from a vibe-coding session with Claude Sonnet 4.6. Use with caution — the scripts (and this doc) have not been fully reviewed. Use at your own risk.
+> 💡 **Tip:** For best results, it is recommended to use these scripts via an agent that can automate, validate, and guide the process interactively.
 
 A toolkit for cleaning up git history across one or many repositories: rewriting commit author/committer identity, searching and replacing sensitive content in file history, and purging unwanted files from the past.
 
