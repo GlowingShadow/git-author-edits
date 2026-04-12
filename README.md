@@ -85,22 +85,40 @@ Profiles (name + email) are auto-discovered from `~/.gitconfig` — no hardcoded
 
 ```bash
 # 1. Clone repos listed in repos.txt
-./clone_repos.sh --file repos.txt --dest /path/to/workspace --yes
+./clone_repos.sh --file repos.txt --dest ./workspace --yes
 
 # 2. Switch all remotes from HTTPS to SSH alias, rename account if needed
-./switch_remotes.sh --root /path/to/workspace --host gitcustom --account oldname:newname --yes
+./switch_remotes.sh --root ./workspace/somerepo --host gitcustom --account oldname:newname --yes
 
-# 3. Preview what would be rewritten (dry-run)
-./rewrite_history_all.sh --root /path/to/workspace --author oldname
+# 3. (Optional) Search for sensitive content or patterns in history
+./search_content.sh --repo ./workspace/somerepo --pattern 'password|secret|email@example.com'
 
-# 4. Apply the rewrite
-./rewrite_history_all.sh --root /path/to/workspace --author oldname --yes
+# 4. (Optional) Replace sensitive content in history (dry-run)
+./replace_content.sh --repo ./workspace/somerepo --replace 'secret==>REDACTED'
+#    Apply the replacement and push:
+./replace_content.sh --repo ./workspace/somerepo --replace 'secret==>REDACTED' --yes --push
 
-# 5. Force-push all repos and clean up backup refs
-./push_all.sh --root /path/to/workspace --clean-refs --yes
+# 5. (Optional) Purge unwanted files from history (dry-run)
+./purge_files.sh --repo ./workspace/somerepo --pattern '*.pem'
+#    Apply the purge and push:
+./purge_files.sh --repo ./workspace/somerepo --pattern '*.pem' --yes --push
 
-# 6. Audit author identities
-./update_authors.sh --root /path/to/workspace
+# 6. Preview what would be rewritten in a single repo (dry-run)
+./rewrite_history.sh --repo ./workspace/somerepo --author oldname
+
+# 7. Apply the rewrite and push for a single repo
+./rewrite_history.sh --repo ./workspace/somerepo --author oldname --yes --push
+
+# (Optional) Rewrite history for all repos in a directory (dry-run)
+./rewrite_history_all.sh --root ./workspace --author oldname
+# (Optional) Apply the rewrite and push for all repos
+./rewrite_history_all.sh --root ./workspace --author oldname --yes --push
+
+# 8. Force-push all repos and clean up backup refs
+./push_all.sh --root ./workspace --clean-refs --yes
+
+# 9. Audit author identities
+./update_authors.sh --root ./workspace
 ```
 
 ---
@@ -200,14 +218,15 @@ Identity is resolved automatically from the repo's `origin` remote URL via `lib_
 Only commits whose author or committer matches `--author` patterns are rewritten — all other commits (co-authors, third parties) are left untouched.
 
 ```
-Usage: rewrite_history.sh [--repo DIR] [--author PATTERN]... [--yes]
-       rewrite_history.sh [--repo DIR] --restore [--yes]
+Usage: rewrite_history.sh [--repo DIR] [--author PATTERN]... [--yes] [--push]
+       rewrite_history.sh [--repo DIR] --restore [--yes] [--push]
 
   --repo DIR       Target repository (default: .)
   --author PATTERN Regex to match author name or email. Repeatable.
                    If omitted, all commits are rewritten.
   --restore        Restore original history from refs/original/ backup
   --yes            Apply (default: dry-run)
+  --push           Force-push rewritten history to remote after rewrite (default: do not push)
 ```
 
 Original branch/tag tips are backed up under `refs/original/` before rewriting, enabling `--restore`.
@@ -219,11 +238,12 @@ Original branch/tag tips are backed up under `refs/original/` before rewriting, 
 Run `rewrite_history.sh` on every git repo found under a root directory. Repos with no matching SSH profile are skipped automatically.
 
 ```
-Usage: rewrite_history_all.sh [--root DIR] [--author PATTERN]... [--yes]
+Usage: rewrite_history_all.sh [--root DIR] [--author PATTERN]... [--yes] [--push]
 
   --root DIR       Root directory to scan (default: .)
   --author PATTERN Regex to match (repeatable, optional)
   --yes            Apply (default: dry-run)
+  --push           Force-push rewritten history to remote after rewrite (default: do not push)
 ```
 
 Repos are skipped if:
@@ -312,12 +332,13 @@ Output is printed per-file with matching lines. Exits with code 0 if no matches,
 Replace text in file contents across the entire git history of a repo using `git filter-repo --replace-text`. All branches and tags are rewritten and force-pushed.
 
 ```
-Usage: replace_content.sh [--repo DIR] --replace OLD==>NEW [--replace OLD==>NEW]... [--file FILE] [--yes]
+Usage: replace_content.sh [--repo DIR] --replace OLD==>NEW [--replace OLD==>NEW]... [--file FILE] [--yes] [--push]
 
   --repo DIR          Target repository (default: .)
   --replace OLD==>NEW Replacement rule in filter-repo format. Repeatable.
   --file FILE         File containing replacement rules (one OLD==>NEW per line)
   --yes               Apply (default: dry-run)
+  --push              Force-push rewritten history to remote after rewrite (default: do not push)
 ```
 
 Example:
@@ -335,12 +356,13 @@ Example:
 Remove files matching glob patterns from the entire git history of a repo using `git filter-repo --invert-paths`. All branches and tags are rewritten and force-pushed.
 
 ```
-Usage: purge_files.sh [--repo DIR] --pattern GLOB [--pattern GLOB]... [--file FILE] [--yes]
+Usage: purge_files.sh [--repo DIR] --pattern GLOB [--pattern GLOB]... [--file FILE] [--yes] [--push]
 
   --repo DIR       Target repository (default: .)
   --pattern GLOB   Glob pattern of files to remove. Repeatable.
   --file FILE      File containing glob patterns (one per line)
   --yes            Apply (default: dry-run)
+  --push           Force-push rewritten history to remote after rewrite (default: do not push)
 ```
 
 Example:
