@@ -10,7 +10,7 @@
 # Branch/tag tips are backed up under refs/original/ before rewriting.
 #
 # Usage:
-#   rewrite_history.sh [--repo DIR] [--author PATTERN]... [--yes]
+#   rewrite_history.sh [--repo DIR] [--author PATTERN]... [--yes] [--push]
 #   rewrite_history.sh [--repo DIR] --restore [--yes]
 #
 # Options:
@@ -18,6 +18,7 @@
 #   --author PATTERN Match pattern for author/committer name or email (regex). Repeatable. Optional — rewrites all commits if omitted.
 #   --restore        Restore original history from refs/original/ backup
 #   --yes            Apply changes (default: dry-run)
+#   --push           Force-push rewritten history to remote after rewrite (default: do not push)
 #   -h, --help       Show help
 
 set -euo pipefail
@@ -32,6 +33,7 @@ usage() {
 REPO="."
 APPLY=0
 RESTORE=0
+DO_PUSH=0
 AUTHOR_PATTERNS=()
 
 while [[ $# -gt 0 ]]; do
@@ -40,6 +42,7 @@ while [[ $# -gt 0 ]]; do
     --author)  AUTHOR_PATTERNS+=("${2:?--author requires a value}"); shift 2 ;;
     --restore) RESTORE=1; shift ;;
     --yes)     APPLY=1; shift ;;
+    --push)    DO_PUSH=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -65,42 +68,50 @@ if [[ $RESTORE -eq 1 ]]; then
 
   echo "Repo   : $REPO"
   echo "Backup refs found: ${#originals[@]}"
+
   for ref in "${originals[@]}"; do
     target="${ref#refs/original/}"
     echo "  $ref  ->  $target"
-  done
-  echo ""
-
-  if [[ $APPLY -eq 0 ]]; then
-    echo "(dry-run — use --yes to apply)"
-    exit 0
-  fi
-
-  for ref in "${originals[@]}"; do
-    target="${ref#refs/original/}"
     git -C "$REPO" update-ref "$target" "$ref"
     git -C "$REPO" update-ref -d "$ref"
     echo "  restored: $target"
   done
 
   # Reset HEAD of current branch to match the restored ref
-  git -C "$REPO" reset --hard HEAD
+  if [[ $DO_PUSH -eq 1 ]]; then
+    echo "Force-pushing rewritten history to remote..."
+    git -C "$REPO" push --force --all
+    git -C "$REPO" push --force --tags
+    echo "Push complete."
+  else
+    echo "To force-push manually, run:"
+    echo "  git -C \"$REPO\" push --force --all"
+    echo "  git -C \"$REPO\" push --force --tags"
+  fi
 
+  git -C "$REPO" reset --hard HEAD
   echo ""
   echo "Done. History restored from backup."
-  echo "Force-push to overwrite remote:"
-  echo "  git -C \"$REPO\" push --force --all"
-  echo "  git -C \"$REPO\" push --force --tags"
   exit 0
 fi
 
-# shellcheck source=lib_profiles.sh
+
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib_profiles.sh"
 declare -A PROFILES
 load_git_profiles || exit 2
 
 # --- Rewrite mode ---
+  if [[ $DO_PUSH -eq 1 ]]; then
+    echo "Force-pushing rewritten history to remote..."
+    git -C "$REPO" push --force --all
+    git -C "$REPO" push --force --tags
+    echo "Push complete."
+  else
+    echo "To force-push manually, run:"
+    echo "  git -C \"$REPO\" push --force --all"
+    echo "  git -C \"$REPO\" push --force --tags"
+  fi
 # Resolve identity from origin remote URL
 remote_url=$(git -C "$REPO" remote get-url origin 2>/dev/null || true)
 if [[ -z "${remote_url:-}" ]]; then

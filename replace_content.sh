@@ -3,13 +3,14 @@
 # After rewrite, no checkout of any past commit will show the original text.
 #
 # Usage:
-#   replace_content.sh [--repo DIR] --replace OLD==>NEW [--replace OLD==>NEW]... [--file FILE] [--yes]
+#   replace_content.sh [--repo DIR] --replace OLD==>NEW [--replace OLD==>NEW]... [--file FILE] [--yes] [--push]
 #
 # Options:
 #   --repo DIR             Target repository (default: .)
 #   --replace OLD==>NEW    Replacement rule (repeatable)
 #   --file FILE            Text file with one OLD==>NEW rule per line
 #   --yes                  Apply (default: dry-run)
+#   --push                 Force-push rewritten history to remote after rewrite (default: do not push)
 #   -h, --help             Show this help
 #
 # At least one --replace or --file is required.
@@ -29,7 +30,9 @@ usage() {
 REPO="."
 RULES=()
 FILE_LIST=""
+
 DRY_RUN=true
+DO_PUSH=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -37,6 +40,7 @@ while [[ $# -gt 0 ]]; do
     --replace) RULES+=("${2:?--replace requires a value}"); shift 2 ;;
     --file)    FILE_LIST="${2:?--file requires a value}"; shift 2 ;;
     --yes)     DRY_RUN=false; shift ;;
+    --push)    DO_PUSH=true; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -87,9 +91,18 @@ if [[ -n "$remote_url" ]]; then
 fi
 
 echo ""
-echo "==> Force-pushing rewritten history..."
-git -C "$REPO" push --force --all
-git -C "$REPO" push --force --tags
-
-echo ""
 echo "Done. Replacements applied to all commits and pushed."
+echo ""
+if [[ "$DO_PUSH" == true ]]; then
+  echo "==> Force-pushing rewritten history..."
+  git -C "$REPO" push --force --all
+  git -C "$REPO" push --force --tags
+  echo ""
+  echo "Done. Replacements applied to all commits and pushed."
+else
+  echo "To force-push manually, run:"
+  echo "  git -C \"$REPO\" push --force --all"
+  echo "  git -C \"$REPO\" push --force --tags"
+  echo ""
+  echo "Done. Replacements applied to all commits."
+fi

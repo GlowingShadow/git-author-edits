@@ -3,12 +3,13 @@
 # Repos whose origin remote doesn't match a known profile are skipped.
 #
 # Usage:
-#   rewrite_history_all.sh [--root DIR] [--author PATTERN]... [--yes]
+#   rewrite_history_all.sh [--root DIR] [--author PATTERN]... [--yes] [--push]
 #
 # Options:
 #   --root DIR       Root directory to scan (default: .)
 #   --author PATTERN Match pattern for author/committer (regex). Repeatable. Optional.
 #   --yes            Apply changes (default: dry-run)
+#   --push           Force-push rewritten history to remote after rewrite (default: do not push)
 #   -h, --help       Show help
 
 set -euo pipefail
@@ -25,6 +26,7 @@ REWRITE="${SCRIPT_DIR}/rewrite_history.sh"
 
 ROOT="."
 APPLY=0
+DO_PUSH=0
 AUTHOR_ARGS=()
 
 while [[ $# -gt 0 ]]; do
@@ -32,6 +34,7 @@ while [[ $# -gt 0 ]]; do
     --root)   ROOT="${2:?--root requires a value}"; shift 2 ;;
     --author) AUTHOR_ARGS+=(--author "${2:?--author requires a value}"); shift 2 ;;
     --yes)    APPLY=1; shift ;;
+    --push)   DO_PUSH=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -104,6 +107,7 @@ for repo in "${repos[@]}"; do
 
   args=(--repo "$repo" "${AUTHOR_ARGS[@]}")
   [[ $APPLY -eq 1 ]] && args+=(--yes)
+  [[ $DO_PUSH -eq 1 ]] && args+=(--push)
 
   repo_start=$(date +%s%3N)
   if "$REWRITE" "${args[@]}"; then

@@ -3,13 +3,14 @@
 # The file is erased from every commit — no checkout can recover it.
 #
 # Usage:
-#   purge_files.sh [--repo DIR] [--pattern GLOB]... [--file FILE] [--yes]
+#   purge_files.sh [--repo DIR] [--pattern GLOB]... [--file FILE] [--yes] [--push]
 #
 # Options:
 #   --repo DIR       Target repository (default: .)
 #   --pattern GLOB   Glob path pattern to purge (repeatable)
 #   --file FILE      Text file with one path or glob per line to purge
 #   --yes            Apply (default: dry-run)
+#   --push           Force-push rewritten history to remote after rewrite (default: do not push)
 #   -h, --help       Show this help
 #
 # At least one --pattern or --file is required.
@@ -29,7 +30,9 @@ usage() {
 REPO="."
 PATTERNS=()
 FILE_LIST=""
+
 DRY_RUN=true
+DO_PUSH=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -37,6 +40,7 @@ while [[ $# -gt 0 ]]; do
     --pattern) PATTERNS+=("${2:?--pattern requires a value}"); shift 2 ;;
     --file)    FILE_LIST="${2:?--file requires a value}"; shift 2 ;;
     --yes)     DRY_RUN=false; shift ;;
+    --push)    DO_PUSH=true; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -100,9 +104,18 @@ if [[ -n "$remote_url" ]]; then
 fi
 
 echo ""
-echo "==> Force-pushing rewritten history..."
-git -C "$REPO" push --force --all
-git -C "$REPO" push --force --tags
-
-echo ""
 echo "Done. Pattern(s) erased from all commits and pushed."
+echo ""
+if [[ "$DO_PUSH" == true ]]; then
+  echo "==> Force-pushing rewritten history..."
+  git -C "$REPO" push --force --all
+  git -C "$REPO" push --force --tags
+  echo ""
+  echo "Done. Pattern(s) erased from all commits and pushed."
+else
+  echo "To force-push manually, run:"
+  echo "  git -C \"$REPO\" push --force --all"
+  echo "  git -C \"$REPO\" push --force --tags"
+  echo ""
+  echo "Done. Pattern(s) erased from all commits."
+fi
